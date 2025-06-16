@@ -3,7 +3,7 @@ package modelo;
 public class ItemVenda {
     private int idProduto;
     private int quantidade;
-    private double precoUnitario; // Preço no momento da venda, para preservar o histórico
+    private double precoUnitario;
 
     public ItemVenda(int idProduto, int quantidade, double precoUnitario) {
         this.idProduto = idProduto;

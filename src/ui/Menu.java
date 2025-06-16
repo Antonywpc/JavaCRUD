@@ -100,7 +100,7 @@ public class Menu {
             String entrada = input.nextLine();
 
             try {
-                return Double.parseDouble(entrada.replace(",", ".")); // Suporta vírgula também
+                return Double.parseDouble(entrada.replace(",", ".")); 
             } catch (NumberFormatException e) {
                 System.out.println("Entrada inválida. Digite um número válido com ou sem casas decimais.");
             }
@@ -112,17 +112,12 @@ public class Menu {
             final String os = System.getProperty("os.name");
 
             if (os.contains("Windows")) {
-                // Comando para limpar o console do Windows
                 new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
             } else {
-                // Este comando (ANSI escape code) funciona na maioria dos terminais
-                // modernos (Linux, macOS) e também nos terminais de IDEs como o VS Code.
                 System.out.print("\033[H\033[2J");
                 System.out.flush();
             }
         } catch (final IOException | InterruptedException e) {
-            // Se a limpeza falhar por algum motivo, o programa não vai quebrar.
-            // Podemos imprimir algumas linhas em branco como uma alternativa simples.
             for (int i = 0; i < 10; i++) {
                 System.out.println();
             }
@@ -131,7 +126,7 @@ public class Menu {
 
     public void esperarEnter() {
         System.out.print("\nPressione Enter para continuar...");
-        input.nextLine(); // Esta chamada simplesmente consome a próxima linha (o Enter)
+        input.nextLine();
     }
 
 }

@@ -9,7 +9,7 @@ public class PedidoVenda {
     private int numeroPedido;
     private int idCliente;
     private TipoVenda tipoVenda;
-    private Endereco enderecoEntrega; // Pode ser null se a venda for presencial
+    private Endereco enderecoEntrega;
     private List<ItemVenda> itens;
     private double totalPedido;
     private boolean ativo;
@@ -18,13 +18,13 @@ public class PedidoVenda {
         this.numeroPedido = contador++;
         this.idCliente = idCliente;
         this.tipoVenda = tipoVenda;
-        this.enderecoEntrega = enderecoEntrega; // Armazena o objeto Endereco
+        this.enderecoEntrega = enderecoEntrega; 
         this.itens = new ArrayList<>();
         this.totalPedido = 0;
         this.ativo = true;
     }
 
-    // --- Getters ---
+
     public int getNumeroPedido() { return numeroPedido; }
     public int getIdCliente() { return idCliente; }
     public TipoVenda getTipoVenda() { return tipoVenda; }
@@ -37,11 +37,11 @@ public class PedidoVenda {
         this.ativo = ativo;
     }
     
-    // --- Métodos de Lógica ---
+
 
     public void adicionarItem(ItemVenda item) {
         this.itens.add(item);
-        recalcularTotalPedido(); // Recalcula o total sempre que um item é adicionado
+        recalcularTotalPedido();
     }
 
     public void recalcularTotalPedido() {
