@@ -18,6 +18,7 @@ public class Endereco {
 
     @Override
     public String toString() {
-        return "Tipo: " + tipo.getDescricao() + " | " + logradouro + ", " + numero + " (CEP: " + cep + ")";
+        return "Tipo: " + tipo.getDescricao() + " | " + logradouro + ", " + numero + " (CEP: " + cep + ")" 
+               + (complemento.isEmpty() ? "" : " - " + complemento);
     }
 }

@@ -8,6 +8,7 @@ import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.function.Function;
 
 public class Menu {
 
@@ -129,4 +130,30 @@ public class Menu {
         input.nextLine();
     }
 
+    public boolean confirmar(String mensagem) {
+    String opcao;
+    do {
+        System.out.print(mensagem + " (s/n): ");
+        opcao = input.nextLine().trim().toLowerCase();
+
+        if (!opcao.equals("s") && !opcao.equals("n")) {
+            System.out.println("Opção inválida! Digite apenas 's' ou 'n'.");
+        }
+    } while (!opcao.equals("s") && !opcao.equals("n"));
+    
+    return opcao.equals("s");
+    }
+
+    public <T> int selecionarEntidade(String titulo, List<T> entidades, Function<T, String> formatador) {
+    System.out.println("\n--- " + titulo.toUpperCase() + " ---");
+    if (entidades.isEmpty()) {
+        System.out.println("Nenhum registro encontrado.");
+        return -1;
+    }
+    for (int i = 0; i < entidades.size(); i++) {
+        System.out.printf("%d - %s\n", i + 1, formatador.apply(entidades.get(i)));
+    }
+    System.out.println("0 - Cancelar");
+    return lerEntradaIntVerificado("\nDigite o número do registro: ");
+    }
 }
