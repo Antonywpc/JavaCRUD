@@ -1,6 +1,7 @@
 package ui;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -22,7 +23,8 @@ public class Menu {
         try (Scanner scanner = new Scanner(new File("menu.txt"))) {
             while (scanner.hasNextLine()) {
                 String linha = scanner.nextLine();
-                if (linha.startsWith("#") || linha.trim().isEmpty()) continue;
+                if (linha.startsWith("#") || linha.trim().isEmpty())
+                    continue;
                 String[] partes = linha.split(";");
                 int nivel = Integer.parseInt(partes[0]);
                 int pai = Integer.parseInt(partes[1]);
@@ -54,13 +56,12 @@ public class Menu {
         try {
             escolha = input.nextInt();
         } catch (InputMismatchException e) {
-            escolha = -1; // Se digitar texto, considera "voltar"
+            escolha = -1;
         }
-        input.nextLine(); // Limpa o buffer
+        input.nextLine();
         return escolha;
     }
 
-    // Método para pegar a entrada do usuário (delegando o Scanner)
     public String lerEntradaString(String prompt) {
         System.out.print(prompt);
         return input.nextLine();
@@ -69,14 +70,68 @@ public class Menu {
     public int lerEntradaInt(String prompt) {
         System.out.print(prompt);
         int valor = input.nextInt();
-        input.nextLine(); // Limpa o buffer
+        input.nextLine();
         return valor;
     }
-    
+
+    public int lerEntradaIntVerificado(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String entrada = input.nextLine();
+
+            try {
+                return Integer.parseInt(entrada);
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Digite apenas números inteiros.");
+            }
+        }
+    }
+
     public double lerEntradaDouble(String prompt) {
         System.out.print(prompt);
         double valor = input.nextDouble();
-        input.nextLine(); // Limpa o buffer
+        input.nextLine();
         return valor;
     }
+
+    public double lerEntradaDoubleVerificado(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String entrada = input.nextLine();
+
+            try {
+                return Double.parseDouble(entrada.replace(",", ".")); // Suporta vírgula também
+            } catch (NumberFormatException e) {
+                System.out.println("Entrada inválida. Digite um número válido com ou sem casas decimais.");
+            }
+        }
+    }
+
+    public void limparTela() {
+        try {
+            final String os = System.getProperty("os.name");
+
+            if (os.contains("Windows")) {
+                // Comando para limpar o console do Windows
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            } else {
+                // Este comando (ANSI escape code) funciona na maioria dos terminais
+                // modernos (Linux, macOS) e também nos terminais de IDEs como o VS Code.
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+            }
+        } catch (final IOException | InterruptedException e) {
+            // Se a limpeza falhar por algum motivo, o programa não vai quebrar.
+            // Podemos imprimir algumas linhas em branco como uma alternativa simples.
+            for (int i = 0; i < 10; i++) {
+                System.out.println();
+            }
+        }
+    }
+
+    public void esperarEnter() {
+        System.out.print("\nPressione Enter para continuar...");
+        input.nextLine(); // Esta chamada simplesmente consome a próxima linha (o Enter)
+    }
+
 }

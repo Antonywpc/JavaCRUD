@@ -6,7 +6,7 @@ public class Produto {
     private String descricao;
     private double custo;
     private double precoVenda;
-    private int idFornecedor; // Vinculado ao Fornecedor [cite: 3]
+    private int idFornecedor; 
     private boolean ativo;
 
     public Produto(String descricao, double custo, double precoVenda, int idFornecedor) {
@@ -18,7 +18,7 @@ public class Produto {
         this.ativo = true;
     }
 
-    // Getters e Setters
+
     public int getCodigo() { return codigo; }
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }

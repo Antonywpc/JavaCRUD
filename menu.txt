@@ -1,7 +1,8 @@
 #Nivel;Pai;Id;Nome
 1;0;1;Gestão de Pessoas
 1;0;2;Gestão de Produtos
-1;0;3;Sair
+1;0;3;Gestão de Pedidos
+1;0;4;Sair
 
 2;1;1;Incluir Pessoa
 2;1;2;Listar Pessoas
@@ -12,3 +13,8 @@
 2;2;2;Listar Produtos
 2;2;3;Alterar Produto
 2;2;4;Excluir Produto
+
+2;3;1;Incluir Pedido de Venda
+2;3;2;Listar Pedidos de Venda
+2;3;3;Alterar Pedido de Venda
+2;3;4;Excluir Pedido de Venda

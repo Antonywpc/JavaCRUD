@@ -14,7 +14,7 @@ public class Fornecedor extends Pessoa {
     }
 
     @Override
-    public void setDocumento(String documento) { // <-- IMPLEMENTAÇÃO DO MÉTODO
+    public void setDocumento(String documento) { 
         this.cnpj = documento;
     }
 }
