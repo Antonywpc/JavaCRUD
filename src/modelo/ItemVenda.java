@@ -26,4 +26,9 @@ public class ItemVenda {
     public double getValorTotalItem() {
         return this.quantidade * this.precoUnitario;
     }
+
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;   
+    }
 }
+

@@ -235,12 +235,16 @@ public class Sistema {
             String tipo = (p instanceof Cliente) ? "Cliente" : "Fornecedor";
             System.out.printf("ID: %d | Nome: %s | Tipo: %s\n", p.getId(), p.getNome(), tipo);
         }
-        int id = menu.lerEntradaIntVerificado("\nDigite o ID da pessoa que deseja alterar: ");
+        int id = menu.lerEntradaIntVerificado("\nDigite o ID da pessoa que deseja alterar: "); 
         Pessoa pessoa = buscarPessoaPorId(id);
         if (pessoa == null || !pessoa.isAtivo()) {
-            System.out.println("ID não encontrado entre as pessoas ativas.");
-            return;
+        System.out.println("ID não encontrado entre as pessoas ativas.");
+        
+        if (menu.confirmar("Deseja tentar novamente?")) {
+            alterarPessoa(); // Chama recursivamente
         }
+        return; // Sai do método em ambos os casos
+    }
 
         boolean alterando = true;
         while (alterando) {
@@ -283,9 +287,11 @@ public class Sistema {
         Pessoa pessoa = buscarPessoaPorId(id);
 
         if (pessoa != null && pessoa.isAtivo()) {
-            pessoa.setAtivo(false);
-            gerarLog("Pessoa desativada: ID " + pessoa.getId());
-            System.out.println("Pessoa desativada com sucesso.");
+            if (menu.confirmar("Tem certeza que deseja desativar " + pessoa.getNome() + " (ID: " + pessoa.getId() + ")?")) {
+                pessoa.setAtivo(false);
+                gerarLog("Pessoa desativada: ID " + pessoa.getId());
+                System.out.println("Pessoa desativada com sucesso.");
+            }
         } else {
             System.out.println("Pessoa não encontrada ou já inativa.");
         }
@@ -360,12 +366,12 @@ public class Sistema {
             System.out.println("Número inválido.");
         }
     }
+    
     // --- MÓDULO DE GESTÃO DE PRODUTOS ---
 
   private void incluirProduto() {
     menu.limparTela();
         System.out.println("\n--- INCLUIR PRODUTO ---");
-        
         Pessoa fornecedor = selecionarFornecedorParaProduto();
         if (fornecedor == null) {
             System.out.println("\nInclusão de produto cancelada, pois nenhum fornecedor foi selecionado.");
@@ -384,29 +390,44 @@ public class Sistema {
     }
 
     private Pessoa selecionarFornecedorParaProduto() {
-        System.out.println("\nSelecione o Fornecedor do produto:");
-        List<Pessoa> fornecedoresAtivos = pessoas.stream()
-            .filter(p -> p instanceof Fornecedor && p.isAtivo())
-            .collect(Collectors.toList());
+    List<Pessoa> fornecedoresAtivos = pessoas.stream()
+        .filter(p -> p instanceof Fornecedor && p.isAtivo())
+        .collect(Collectors.toList());
 
-        if (fornecedoresAtivos.isEmpty()) {
-            System.out.println("Nenhum fornecedor ativo encontrado. Cadastre um fornecedor primeiro.");
-            return null;
-        }
+    if (fornecedoresAtivos.isEmpty()) {
+        System.out.println("Nenhum fornecedor ativo encontrado. Cadastre um fornecedor primeiro.");
+        return null;
+    }
 
+    while (true) {  // Loop infinito até ter seleção válida ou cancelamento
+        menu.limparTela();
+        System.out.println("\n--- SELECIONAR FORNECEDOR ---");
+        System.out.println("Selecione o Fornecedor do produto:");
+
+        // Lista fornecedores
         for (int i = 0; i < fornecedoresAtivos.size(); i++) {
             Pessoa fornecedor = fornecedoresAtivos.get(i);
             System.out.printf("%d - %s (ID: %d)\n", (i + 1), fornecedor.getNome(), fornecedor.getId());
         }
 
-        int escolha = menu.lerEntradaIntVerificado("Escolha o número do fornecedor: ");
-        if (escolha > 0 && escolha <= fornecedoresAtivos.size()) {
-            return fornecedoresAtivos.get(escolha - 1);
-        } else {
-            System.out.println("Seleção inválida.");
-            return null;
+        System.out.println("0 - Cancelar");
+        int escolha = menu.lerEntradaIntVerificado("\nEscolha o número do fornecedor: ");
+
+        if (escolha == 0) {
+            return null;  // Usuário escolheu cancelar
         }
+
+        if (escolha > 0 && escolha <= fornecedoresAtivos.size()) {
+            return fornecedoresAtivos.get(escolha - 1);  // Retorna fornecedor válido
+        }
+
+        // Se chegou aqui, seleção foi inválida
+        if (!menu.confirmar("Seleção inválida. Tentar novamente?")) {
+            return null;  // Usuário não quer tentar novamente
+        }
+        // Se confirmou que quer tentar novamente, o loop continua
     }
+}
 
     private void listarProdutos() {
         menu.limparTela();
@@ -451,55 +472,106 @@ public class Sistema {
 
         boolean alterando = true;
         while (alterando) {
-            menu.limparTela();
-            System.out.println("\nAlterando Produto: " + produto.getDescricao());
-            System.out.println("1 - Alterar Descrição");
-            System.out.println("2 - Alterar Preço de Custo");
-            System.out.println("3 - Alterar Preço de Venda");
-            System.out.println("4 - Concluir Alterações");
-            int escolha = menu.lerEntradaIntVerificado("O que deseja fazer? ");
-
-            switch (escolha) {
-                case 1:
-                    String novaDesc = menu.lerEntradaString("Nova descrição: ");
-                    produto.setDescricao(novaDesc);
-                    System.out.println("Descrição alterada com sucesso!");
-                    break;
-                case 2:
-                    double novoCusto = menu.lerEntradaDoubleVerificado("Novo preço de CUSTO: R$ ");
-                    produto.setCusto(novoCusto);
-                    System.out.println("Preço de custo alterado com sucesso!");
-                    break;
-                case 3:
-                    double novoPreco = menu.lerEntradaDoubleVerificado("Novo preço de VENDA: R$ ");
-                    produto.setPrecoVenda(novoPreco);
-                    System.out.println("Preço de venda alterado com sucesso!");
-                    break;
-                case 4:
-                    alterando = false;
-                    break;
-                default:
-                    menu.limparTela();
-                    System.out.println("Opção inválida.");
-            }
-        }
-        gerarLog("Produto alterado: Cód " + produto.getCodigo());
-        System.out.println("Alterações no produto concluídas.");
-    }
-
-    private void excluirProduto() {
         menu.limparTela();
-        int codigo = menu.lerEntradaIntVerificado("Digite o código do produto a excluir (desativar): ");
-        Produto produto = buscarProdutoPorCodigo(codigo);
+        System.out.println("\nAlterando Produto: " + produto.getDescricao());
+        System.out.println("1 - Alterar Descrição");
+        System.out.println("2 - Alterar Preço de Custo");
+        System.out.println("3 - Alterar Preço de Venda");
+        System.out.println("4 - Concluir Alterações");
+        
 
-        if (produto != null && produto.isAtivo()) {
-            produto.setAtivo(false);
-            gerarLog("Produto desativado: Cód " + produto.getCodigo());
-            System.out.println("Produto desativado com sucesso.");
+        boolean deveLimpar = true;
+        
+        int escolha = menu.lerEntradaIntVerificado("O que deseja fazer? ");
+
+        switch (escolha) {
+            case 1:
+                String novaDescricao = menu.lerEntradaString("Nova descrição: ");
+                produto.setDescricao(novaDescricao);
+                gerarLog("Produto alterado: Cód " + produto.getCodigo() + " - Nova descrição: " + novaDescricao);
+                System.out.println("Descrição alterada com sucesso!");
+                deveLimpar = false; 
+                break;
+            case 2:
+                double novoCusto = menu.lerEntradaDoubleVerificado("Novo preço de CUSTO: R$ ");
+                produto.setCusto(novoCusto);
+                gerarLog("Produto alterado: Cód " + produto.getCodigo() + " - Novo custo: R$ " + novoCusto);
+                System.out.println("Preço de custo alterado com sucesso!");
+                deveLimpar = false;
+                break;
+            case 3:
+                double novoPreco = menu.lerEntradaDoubleVerificado("Novo preço de VENDA: R$ ");
+                produto.setPrecoVenda(novoPreco);
+                gerarLog("Produto alterado: Cód " + produto.getCodigo() + " - Novo preço de venda: R$ " + novoPreco);
+                System.out.println("Preço de venda alterado com sucesso!");
+                deveLimpar = false;
+                break;
+            case 4:
+                alterando = false;
+                break;
+            default:
+                System.out.println("Opção inválida.");
+        }
+        
+        if (deveLimpar) {
+            menu.limparTela();
         } else {
-            System.out.println("Produto não encontrado ou já inativo.");
+            System.out.println("Produto alterado com sucesso!");
+            System.out.println("\nPressione ENTER para continuar...");
+            menu.lerEntradaString("");
         }
     }
+    }
+   
+    private void excluirProduto() {
+    menu.limparTela();
+    System.out.println("\n--- EXCLUIR PRODUTO ---");
+    
+    // Filtra produtos ativos
+    List<Produto> produtosAtivos = produtos.stream()
+                                    .filter(Produto::isAtivo)
+                                    .collect(Collectors.toList());
+
+    // Usando o método genérico de seleção
+    int escolha = menu.selecionarEntidade(
+        "SELECIONAR PRODUTO PARA EXCLUIR",
+        produtosAtivos,
+        p -> String.format("Cód: %d | Desc: %-20s | Preço: R$ %.2f | Fornecedor ID: %d",
+                         p.getCodigo(),
+                         p.getDescricao(),
+                         p.getPrecoVenda(),
+                         p.getIdFornecedor())
+    );
+
+    // Tratamento da seleção
+    if (escolha <= 0 || escolha > produtosAtivos.size()) {
+        System.out.println("Operação cancelada ou código inválido.");
+        return;
+    }
+
+    Produto produto = produtosAtivos.get(escolha - 1);
+    
+    // Confirmação detalhada
+    String mensagemConfirmacao = String.format(
+        "Você está desativando:\n\n" +
+        "Código: %d\n" +
+        "Descrição: %s\n" +
+        "Preço de venda: R$ %.2f\n\n" +
+        "Esta ação não pode ser desfeita.\n" +
+        "Confirmar desativação?",
+        produto.getCodigo(),
+        produto.getDescricao(),
+        produto.getPrecoVenda()
+    );
+
+    if (menu.confirmar(mensagemConfirmacao)) {
+        produto.setAtivo(false);
+        gerarLog("Produto desativado: Cód " + produto.getCodigo() + " - " + produto.getDescricao());
+        System.out.println("\nProduto desativado com sucesso!");
+    } else {
+        System.out.println("\nOperação cancelada pelo usuário.");
+    }
+}
 
     // --- MÓDULO DE GESTÃO DE PEDIDOS ---
 
@@ -613,29 +685,47 @@ public class Sistema {
     }
 
     private void excluirPedido() {
-        System.out.println("\n--- EXCLUIR PEDIDO DE VENDA ---");
-        List<PedidoVenda> pedidosAtivos = pedidos.stream().filter(PedidoVenda::isAtivo).collect(Collectors.toList());
-        if (pedidosAtivos.isEmpty()) {
-            System.out.println("Nenhum pedido ativo para excluir.");
-            return;
-        }
-        System.out.println("\nSelecione o pedido a ser excluído:");
-        for (PedidoVenda pedido : pedidosAtivos) {
+    menu.limparTela();
+    System.out.println("\n--- EXCLUIR PEDIDO DE VENDA ---");
+    
+    List<PedidoVenda> pedidosAtivos = pedidos.stream()
+                                      .filter(PedidoVenda::isAtivo)
+                                      .collect(Collectors.toList());
+
+    int escolha = menu.selecionarEntidade(
+        "SELECIONAR PEDIDO PARA EXCLUIR",
+        pedidosAtivos,
+        pedido -> {
             Pessoa cliente = buscarPessoaPorId(pedido.getIdCliente());
             String nomeCliente = (cliente != null) ? cliente.getNome() : "Cliente não encontrado";
-            System.out.printf("Nº: %d | Cliente: %s | Total: R$ %.2f\n", pedido.getNumeroPedido(), nomeCliente,
-                    pedido.getTotalPedido());
+            return String.format("Nº: %d | Cliente: %s | Total: R$ %.2f", 
+                               pedido.getNumeroPedido(), 
+                               nomeCliente,
+                               pedido.getTotalPedido());
         }
-        int numeroPedido = menu.lerEntradaIntVerificado("\nDigite o número do pedido a excluir (desativar): ");
-        PedidoVenda pedido = buscarPedidoPorNumero(numeroPedido);
-        if (pedido != null && pedido.isAtivo()) {
-            pedido.setAtivo(false);
-            gerarLog("Pedido de Venda desativado: Nº " + pedido.getNumeroPedido());
-            System.out.println("Pedido desativado com sucesso.");
-        } else {
-            System.out.println("Pedido não encontrado ou já está inativo.");
-        }
+    );
+
+    if (escolha <= 0 || escolha > pedidosAtivos.size()) {
+        System.out.println("Operação cancelada ou pedido inválido.");
+        return;
     }
+
+    PedidoVenda pedido = pedidosAtivos.get(escolha - 1);
+    
+    if (menu.confirmar(String.format(
+        "Tem certeza que deseja desativar o pedido Nº%d do cliente %s (Total: R$%.2f)?",
+        pedido.getNumeroPedido(),
+        buscarPessoaPorId(pedido.getIdCliente()).getNome(),
+        pedido.getTotalPedido()
+    ))) {
+        pedido.setAtivo(false);
+        gerarLog("Pedido de Venda desativado: Nº " + pedido.getNumeroPedido());
+        System.out.println("Pedido desativado com sucesso.");
+    } else {
+        System.out.println("Operação cancelada pelo usuário.");
+    }
+}
+
 
     private Pessoa selecionarClienteParaPedido() {
         System.out.println("\nSelecione o Cliente:");
@@ -703,7 +793,7 @@ public class Sistema {
                 continue;
             }
             ItemVenda item = new ItemVenda(produto.getCodigo(), quantidade, produto.getPrecoVenda());
-            pedido.adicionarItem(item);
+            pedido.adicionarItem(pedido, item, quantidade);
             System.out.printf("Item adicionado: %d x %s\n", quantidade, produto.getDescricao());
             String continuar = menu.lerEntradaString("Adicionar mais um item? (s/n): ");
             if (!continuar.equalsIgnoreCase("s")) {
@@ -744,20 +834,40 @@ public class Sistema {
             String descProduto = (produto != null) ? produto.getDescricao() : "Produto não encontrado";
             System.out.printf("%d - %s (Qtd: %d)\n", (i + 1), descProduto, itens.get(i).getQuantidade());
         }
+        
         int escolha = menu.lerEntradaIntVerificado("Digite o número do item a remover (ou 0 para cancelar): ");
         if (escolha == 0) {
             return;
         }
         int indiceParaRemover = escolha - 1;
-        if (indiceParaRemover >= 0 && indiceParaRemover < itens.size()) {
-            ItemVenda itemRemovido = itens.remove(indiceParaRemover);
+            if (indiceParaRemover >= 0 && indiceParaRemover < itens.size()) {
+            ItemVenda itemRemovido = itens.get(indiceParaRemover); 
             Produto produtoRemovido = buscarProdutoPorCodigo(itemRemovido.getIdProduto());
-            String descProdutoRemovido = (produtoRemovido != null) ? produtoRemovido.getDescricao()
-                    : "ID " + itemRemovido.getIdProduto();
+            String descProdutoRemovido = (produtoRemovido != null) 
+                ? produtoRemovido.getDescricao() 
+                : "ID " + itemRemovido.getIdProduto();
+
+        String mensagemConfirmacao = String.format(
+            "Você está removendo:\n" +
+            "Produto: %s\n" +
+            "Quantidade: %d\n" +
+            "Valor unitário: R$ %.2f\n\n" +
+            "Confirmar remoção?",
+            descProdutoRemovido,
+            itemRemovido.getQuantidade(),
+            produtoRemovido != null ? produtoRemovido.getPrecoVenda() : 0.0
+        );
+
+        if (menu.confirmar(mensagemConfirmacao)) {
+            itens.remove(indiceParaRemover); 
             gerarLog("Item removido do Pedido Nº " + pedido.getNumeroPedido() + ": " + descProdutoRemovido);
             System.out.println("Item removido com sucesso.");
         } else {
-            System.out.println("Número de item inválido.");
+            System.out.println("Remoção cancelada pelo usuário.");
+        }
+    }
+    else {
+                System.out.println("Número de item inválido.");
         }
     }
 
